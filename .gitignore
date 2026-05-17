@@ -8,3 +8,4 @@ build/
 .saved_models/
 .vscode/
 node_modules/
+datasets/
