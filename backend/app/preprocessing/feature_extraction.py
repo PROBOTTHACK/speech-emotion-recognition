@@ -1,17 +1,48 @@
 import librosa
 import numpy as np
 from app.preprocessing.normalize import normalize_features
+import random
 
-def extract_features(file_path, max_pad_len=128):
+from app.preprocessing.augment import (
+    add_noise,
+    pitch_shift,
+    time_stretch
+)
+def extract_features(file_path,augment=False, max_pad_len=128):
     """
     Convert audio file into Mel Spectrogram features
     """
+    
 
     # STEP 1 — Load audio file
     audio, sample_rate = librosa.load(
         file_path,
         sr=22050
     )
+    # Random Augmentation
+    if augment:
+
+        augmentation_choice = random.choice([
+            "noise",
+            "pitch",
+            "stretch",
+            "none"
+        ])
+
+        if augmentation_choice == "noise":
+
+            audio = add_noise(audio)
+
+        elif augmentation_choice == "pitch":
+
+            audio = pitch_shift(
+                audio,
+                sample_rate
+            )
+
+        elif augmentation_choice == "stretch":
+
+            audio = time_stretch(audio)
 
     # STEP 2 — Generate Mel Spectrogram
     mel_spectrogram = librosa.feature.melspectrogram(
