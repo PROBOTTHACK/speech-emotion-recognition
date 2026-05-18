@@ -11,6 +11,7 @@ class CNNLSTMModel(nn.Module):
         # CNN Feature Extractor
         self.cnn = nn.Sequential(
 
+            # Conv Block 1
             nn.Conv2d(
                 in_channels=1,
                 out_channels=32,
@@ -18,10 +19,15 @@ class CNNLSTMModel(nn.Module):
                 padding=1
             ),
 
+            nn.BatchNorm2d(32),
+
             nn.ReLU(),
 
             nn.MaxPool2d(2),
 
+            nn.Dropout2d(0.2),
+
+            # Conv Block 2
             nn.Conv2d(
                 in_channels=32,
                 out_channels=64,
@@ -29,9 +35,13 @@ class CNNLSTMModel(nn.Module):
                 padding=1
             ),
 
+            nn.BatchNorm2d(64),
+
             nn.ReLU(),
 
-            nn.MaxPool2d(2)
+            nn.MaxPool2d(2),
+
+            nn.Dropout2d(0.2)
 
         )
 
