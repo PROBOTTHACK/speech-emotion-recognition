@@ -226,7 +226,7 @@ Frontend runs at `http://localhost:5173`
 - [x] Dataset pipeline (RAVDESS → TESS → CREMA-D → SAVEE)
 - [x] FastAPI backend skeleton
 - [x] React frontend skeleton
-- [ ] Model training complete — RAVDESS baseline
+- [x] Model training complete — RAVDESS baseline
 - [ ] Multi-dataset training + evaluation
 - [ ] Real-time microphone input (WebRTC)
 - [ ] WebSocket streaming for live predictions
