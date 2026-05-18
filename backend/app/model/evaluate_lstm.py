@@ -58,7 +58,7 @@ model = CNNLSTMModel(
 
 model.load_state_dict(
     torch.load(
-        "app/saved_models/cnn_lstm_emotion_model.pth",
+        "app/saved_models/best_cnn_lstm_model.pth",
         map_location=device
     )
 )

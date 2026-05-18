@@ -13,6 +13,7 @@ from torch.utils.data import (
 
 from app.preprocessing.dataset_loader import X, y
 from app.model.cnn_lstm_model import CNNLSTMModel
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
 # Device
@@ -94,10 +95,20 @@ optimizer = optim.Adam(
     model.parameters(),
     lr=0.001
 )
+scheduler = ReduceLROnPlateau(
+    optimizer,
+    mode='min',
+    factor=0.5,
+    patience=3
+)
 
+best_val_accuracy = 0.0
+
+early_stop_counter = 0
+early_stop_patience = 6
 
 # Training
-epochs = 20
+epochs = 40
 
 for epoch in range(epochs):
 
@@ -171,19 +182,40 @@ for epoch in range(epochs):
         all_labels,
         all_predictions
     )
+    scheduler.step(val_loss)
+    # Save Best Model
+    if val_accuracy > best_val_accuracy:
+
+        best_val_accuracy = val_accuracy
+
+        torch.save(
+            model.state_dict(),
+            "app/saved_models/best_cnn_lstm_model.pth"
+        )
+
+        print("Best Model Saved")
+
+
+        early_stop_counter = 0
+
+    else:
+
+        early_stop_counter += 1
+
+    # Early Stopping
+    if early_stop_counter >= early_stop_patience:
+
+        print("Early Stopping Triggered")
+
+        break
+
+    current_lr = optimizer.param_groups[0]['lr']
 
     print(
         f"Epoch [{epoch+1}/{epochs}] | "
         f"Train Loss: {train_loss:.4f} | "
         f"Val Loss: {val_loss:.4f} | "
-        f"Val Accuracy: {val_accuracy * 100:.2f}%"
+        f"Val Accuracy: {val_accuracy * 100:.2f}% | "
+        f"LR: {current_lr}"
     )
 
-
-# Save Model
-torch.save(
-    model.state_dict(),
-    "app/saved_models/cnn_lstm_emotion_model.pth"
-)
-
-print("CNN-LSTM Model Saved Successfully")
