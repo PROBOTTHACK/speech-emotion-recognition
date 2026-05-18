@@ -1,6 +1,6 @@
 import librosa
 import numpy as np
-
+from app.preprocessing.normalize import normalize_features
 
 def extract_features(file_path, max_pad_len=128):
     """
@@ -40,4 +40,8 @@ def extract_features(file_path, max_pad_len=128):
     else:
         mel_spectrogram_db = mel_spectrogram_db[:, :max_pad_len]
 
-    return mel_spectrogram_db
+    normalized_features = normalize_features(
+        mel_spectrogram_db
+    )
+
+    return normalized_features
