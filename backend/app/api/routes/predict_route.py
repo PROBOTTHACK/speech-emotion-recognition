@@ -1,13 +1,18 @@
 from fastapi import (
     APIRouter,
     UploadFile,
-    File
+    File,
+    HTTPException
 )
 
 import shutil
 import os
 
 from app.model.predict import predict_emotion
+
+from app.utils.logger import logger
+
+from app.utils.config import TEMP_FOLDER
 
 
 router = APIRouter()
@@ -18,31 +23,67 @@ async def predict_audio(
     file: UploadFile = File(...)
 ):
 
-    # Create temp folder if not exists
-    os.makedirs(
-        "temp",
-        exist_ok=True
-    )
+    try:
 
-    # Temporary file path
-    temp_file_path = f"temp/{file.filename}"
+        # Validate file extension
+        if not file.filename.endswith(".wav"):
 
-    # Save uploaded audio
-    with open(temp_file_path, "wb") as buffer:
+            logger.error(
+                "Invalid file type uploaded"
+            )
 
-        shutil.copyfileobj(
-            file.file,
-            buffer
+            raise HTTPException(
+                status_code=400,
+                detail="Only .wav files are supported"
+            )
+
+        # Create temp folder
+        os.makedirs(
+            TEMP_FOLDER,
+            exist_ok=True
         )
 
-    # Predict emotion
-    predicted_emotion = predict_emotion(
-        temp_file_path
-    )
+        temp_file_path = (
+            f"{TEMP_FOLDER}/{file.filename}"
+        )
 
-    # Delete temp file
-    os.remove(temp_file_path)
+        # Save uploaded file
+        with open(
+            temp_file_path,
+            "wb"
+        ) as buffer:
 
-    return {
-        "predicted_emotion": predicted_emotion
-    }
+            shutil.copyfileobj(
+                file.file,
+                buffer
+            )
+
+        logger.info(
+            f"File uploaded: {file.filename}"
+        )
+
+        # Prediction
+        prediction = predict_emotion(
+            temp_file_path
+        )
+
+        logger.info(
+            f"Prediction completed: "
+            f"{prediction}"
+        )
+
+        # Delete temp file
+        os.remove(temp_file_path)
+
+        return prediction
+
+    except Exception as e:
+
+        logger.error(
+            f"Prediction Error: {str(e)}"
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Prediction failed"
+        )

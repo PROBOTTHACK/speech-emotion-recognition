@@ -60,13 +60,25 @@ def predict_emotion(audio_path):
 
         outputs = model(features_tensor)
 
-        predicted_index = torch.argmax(
+        probabilities = torch.softmax(
             outputs,
             dim=1
-        ).item()
+        )
+
+        confidence, predicted_index = torch.max(
+            probabilities,
+            dim=1
+        )
+
+        predicted_index = predicted_index.item()
+
+        confidence = confidence.item()
 
     predicted_emotion = label_encoder.inverse_transform(
         [predicted_index]
     )[0]
 
-    return predicted_emotion
+    return {
+        "emotion": predicted_emotion,
+        "confidence": round(confidence * 100, 2)
+    }
