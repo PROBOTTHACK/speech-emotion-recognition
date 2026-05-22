@@ -26,7 +26,14 @@ async def predict_audio(
     try:
 
         # Validate file extension
-        if not file.filename.endswith(".wav"):
+        allowed_extensions = (
+            ".wav",
+            ".webm"
+        )
+
+        if not file.filename.endswith(
+            allowed_extensions
+        ):
 
             logger.error(
                 "Invalid file type uploaded"
@@ -34,7 +41,7 @@ async def predict_audio(
 
             raise HTTPException(
                 status_code=400,
-                detail="Only .wav files are supported"
+                detail="Only .wav and .webm files are supported"
             )
 
         # Create temp folder
