@@ -1,6 +1,7 @@
 import Navbar from "../components/Navbar";
 import AudioUpload from "../components/AudioUpload";
 import BackgroundEffects from "../components/BackgroundEffects";
+import AudioRecorder from "../components/AudioRecorder";
 
 const Home = () => {
   return (
@@ -12,6 +13,7 @@ const Home = () => {
 
       <div className="px-6 relative z-10">
         <AudioUpload />
+        <AudioRecorder />
       </div>
 
     </div>
