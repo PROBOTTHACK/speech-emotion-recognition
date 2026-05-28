@@ -206,6 +206,26 @@ Frontend runs at `http://localhost:5173`
 
 ---
 
+### Docker Compose
+
+From the project root:
+
+```bash
+docker compose up --build
+```
+
+Open the app at `http://localhost:5173`.
+
+The frontend container serves the production build with Nginx and proxies `/api/*` requests to the backend container.
+
+To stop the containers:
+
+```bash
+docker compose down
+```
+
+---
+
 ## 🛠️ Tech Stack
 
 | Layer | Technology | Purpose |
@@ -233,7 +253,7 @@ Frontend runs at `http://localhost:5173`
 - [ ] Emotion confidence visualization (bar chart)
 - [ ] Analytics dashboard (emotion history)
 - [ ] Transformer-based upgrade (Wav2Vec2 / HuBERT)
-- [ ] Docker deployment
+- [x] Docker deployment
 
 ---
 

@@ -7,14 +7,14 @@ from fastapi import (
 
 import shutil
 import os
+from uuid import uuid4
 
 from app.model.predict import predict_emotion
 
 from app.utils.logger import logger
 
 from app.utils.config import TEMP_FOLDER
-
-
+import traceback
 router = APIRouter()
 
 
@@ -22,6 +22,9 @@ router = APIRouter()
 async def predict_audio(
     file: UploadFile = File(...)
 ):
+
+    temp_file_path = None
+    wav_path = None
 
     try:
 
@@ -31,9 +34,9 @@ async def predict_audio(
             ".webm"
         )
 
-        if not file.filename.endswith(
-            allowed_extensions
-        ):
+        filename = file.filename or ""
+
+        if not filename.lower().endswith(allowed_extensions):
 
             logger.error(
                 "Invalid file type uploaded"
@@ -50,8 +53,12 @@ async def predict_audio(
             exist_ok=True
         )
 
-        temp_file_path = (
-            f"{TEMP_FOLDER}/{file.filename}"
+        _, file_extension = os.path.splitext(filename)
+        file_extension = file_extension.lower()
+
+        temp_file_path = os.path.join(
+            TEMP_FOLDER,
+            f"{uuid4().hex}{file_extension}"
         )
 
         # Save uploaded file
@@ -70,9 +77,46 @@ async def predict_audio(
         )
 
         # Prediction
-        prediction = predict_emotion(
-            temp_file_path
-        )
+        # Convert webm to wav if needed
+        if file_extension == ".webm":
+            try:
+                from pydub import AudioSegment
+            except ImportError as exc:
+                raise HTTPException(
+                    status_code=500,
+                    detail=(
+                        "WebM conversion requires pydub and FFmpeg. "
+                        "Install pydub or upload WAV audio."
+                    )
+                ) from exc
+
+            wav_path = os.path.join(
+                TEMP_FOLDER,
+                f"{uuid4().hex}.wav"
+            )
+
+            audio = AudioSegment.from_file(
+                temp_file_path,
+                format="webm"
+            )
+
+            audio.export(
+                wav_path,
+                format="wav"
+            )
+
+            prediction = predict_emotion(
+                wav_path
+            )
+
+            os.remove(wav_path)
+            wav_path = None
+
+        else:
+
+            prediction = predict_emotion(
+                temp_file_path
+            )
 
         logger.info(
             f"Prediction completed: "
@@ -81,16 +125,25 @@ async def predict_audio(
 
         # Delete temp file
         os.remove(temp_file_path)
+        temp_file_path = None
 
         return prediction
 
-    except Exception as e:
+    except HTTPException:
+        raise
+
+    except Exception:
 
         logger.error(
-            f"Prediction Error: {str(e)}"
+            traceback.format_exc()
         )
 
         raise HTTPException(
             status_code=500,
             detail="Prediction failed"
         )
+
+    finally:
+        for path in (wav_path, temp_file_path):
+            if path and os.path.exists(path):
+                os.remove(path)

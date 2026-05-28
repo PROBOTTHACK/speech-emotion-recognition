@@ -5,7 +5,7 @@ from sklearn.preprocessing import LabelEncoder
 
 from app.model.cnn_lstm_model import CNNLSTMModel
 from app.preprocessing.feature_extraction import extract_features
-from app.preprocessing.dataset_loader import y
+from app.utils.labels import emotion_map
 import torch.nn.functional as F
 
 # Device
@@ -17,7 +17,9 @@ device = torch.device(
 # Label Encoder
 label_encoder = LabelEncoder()
 
-label_encoder.fit(y)
+label_encoder.fit(
+    sorted(set(emotion_map.values()))
+)
 
 
 # Load Model
@@ -84,9 +86,9 @@ def predict_emotion(audio_path):
         )
 
     # Emotion label
-    predicted_emotion = label_encoder.inverse_transform(
+    predicted_emotion = str(label_encoder.inverse_transform(
         [predicted_index]
-    )[0]
+    )[0])
 
     # Build probability dictionary
     probability_dict = {}
@@ -96,7 +98,7 @@ def predict_emotion(audio_path):
         probabilities_list
     ):
 
-        probability_dict[emotion] = round(
+        probability_dict[str(emotion)] = round(
             float(probability * 100),
             2
         )

@@ -12,8 +12,13 @@ import toast from "react-hot-toast";
 import API from "../services/api";
 
 import useRecorder from "../hooks/useRecorder";
+import { useState } from "react";
+
+import EmotionCard from "./EmotionCard";
+import EmotionChart from "./EmotionChart";
 
 const AudioRecorder = () => {
+    const [prediction, setPrediction] = useState(null);
 
   const {
     isRecording,
@@ -62,7 +67,9 @@ const AudioRecorder = () => {
         }
       );
 
-      console.log(response.data);
+      setPrediction(response.data);
+
+    console.log(response.data);
 
     } catch (error) {
 
@@ -209,6 +216,18 @@ const AudioRecorder = () => {
 
         </motion.div>
       )}
+      {prediction && (
+        <>
+            <EmotionCard
+            emotion={prediction.emotion}
+            confidence={prediction.confidence}
+            />
+
+            <EmotionChart
+            probabilities={prediction.probabilities}
+            />
+        </>
+        )}
 
     </motion.div>
   );

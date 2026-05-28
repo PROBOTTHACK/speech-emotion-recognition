@@ -67,19 +67,7 @@ const AudioUpload = () => {
         }
       );
 
-      setPrediction({
-        ...response.data,
-
-        probabilities: {
-          happy: 91.2,
-          sad: 2.3,
-          angry: 1.1,
-          fear: 0.7,
-          neutral: 2.4,
-          surprise: 1.5,
-          disgust: 0.8,
-        },
-      });
+      setPrediction(response.data);
       toast.success("Emotion predicted successfully!");
 
     } catch (err) {
