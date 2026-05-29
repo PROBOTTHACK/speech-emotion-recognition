@@ -1,13 +1,8 @@
 fastapi
 uvicorn
 torch
-torchaudio
 librosa
 numpy
-pandas
-matplotlib
 scikit-learn
 python-multipart
-audiomentations
-sounddevice
 pydub

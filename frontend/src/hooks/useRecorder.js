@@ -1,9 +1,15 @@
 import { useRef, useState } from "react";
 
+const MAX_RECORDING_MS = 5000;
+const MAX_WAV_SECONDS = 5;
+
 const encodeWav = (audioBuffer) => {
   const numberOfChannels = audioBuffer.numberOfChannels;
   const sampleRate = audioBuffer.sampleRate;
-  const samples = audioBuffer.length;
+  const samples = Math.min(
+    audioBuffer.length,
+    sampleRate * MAX_WAV_SECONDS
+  );
   const bytesPerSample = 2;
   const blockAlign = numberOfChannels * bytesPerSample;
   const buffer = new ArrayBuffer(44 + samples * blockAlign);
@@ -58,6 +64,8 @@ const useRecorder = () => {
 
   const audioChunksRef = useRef([]);
 
+  const stopTimerRef = useRef(null);
+
   const startRecording = async () => {
 
     try {
@@ -106,6 +114,10 @@ const useRecorder = () => {
 
       mediaRecorder.start();
 
+      stopTimerRef.current = window.setTimeout(() => {
+        stopRecording();
+      }, MAX_RECORDING_MS);
+
       setIsRecording(true);
 
     } catch (error) {
@@ -117,6 +129,11 @@ const useRecorder = () => {
   const stopRecording = () => {
 
     if (mediaRecorderRef.current) {
+
+      if (stopTimerRef.current) {
+        clearTimeout(stopTimerRef.current);
+        stopTimerRef.current = null;
+      }
 
       mediaRecorderRef.current.stop();
 

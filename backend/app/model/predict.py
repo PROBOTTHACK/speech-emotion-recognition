@@ -37,6 +37,17 @@ model.load_state_dict(
 model.eval()
 
 
+def warm_up_model():
+    dummy_features = torch.zeros(
+        (1, 1, 128, 128),
+        dtype=torch.float32,
+        device=device
+    )
+
+    with torch.no_grad():
+        model(dummy_features)
+
+
 def predict_emotion(audio_path):
 
     # Extract Features

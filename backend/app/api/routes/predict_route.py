@@ -7,6 +7,7 @@ from fastapi import (
 
 import shutil
 import os
+import time
 from uuid import uuid4
 
 from app.model.predict import predict_emotion
@@ -16,6 +17,7 @@ from app.utils.logger import logger
 from app.utils.config import TEMP_FOLDER
 import traceback
 router = APIRouter()
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024
 
 
 @router.post("/predict")
@@ -25,6 +27,7 @@ async def predict_audio(
 
     temp_file_path = None
     wav_path = None
+    started_at = time.perf_counter()
 
     try:
 
@@ -72,8 +75,16 @@ async def predict_audio(
                 buffer
             )
 
+        file_size = os.path.getsize(temp_file_path)
+
+        if file_size > MAX_UPLOAD_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail="Audio file is too large. Record a shorter clip."
+            )
+
         logger.info(
-            f"File uploaded: {file.filename}"
+            f"File uploaded: {file.filename} ({file_size} bytes)"
         )
 
         # Prediction
@@ -120,7 +131,7 @@ async def predict_audio(
 
         logger.info(
             f"Prediction completed: "
-            f"{prediction}"
+            f"{prediction} in {time.perf_counter() - started_at:.2f}s"
         )
 
         # Delete temp file

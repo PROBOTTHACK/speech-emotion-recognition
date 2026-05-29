@@ -8,7 +8,12 @@ from app.preprocessing.augment import (
     pitch_shift,
     time_stretch
 )
-def extract_features(file_path,augment=False, max_pad_len=128):
+def extract_features(
+    file_path,
+    augment=False,
+    max_pad_len=128,
+    duration=4
+):
     """
     Convert audio file into Mel Spectrogram features
     """
@@ -17,7 +22,9 @@ def extract_features(file_path,augment=False, max_pad_len=128):
     # STEP 1 — Load audio file
     audio, sample_rate = librosa.load(
         file_path,
-        sr=22050
+        sr=22050,
+        mono=True,
+        duration=duration
     )
     # Random Augmentation
     if augment:

@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.predict_route import router
+from app.model.predict import warm_up_model
+from app.utils.logger import logger
 
 from app.utils.config import (
     API_TITLE,
@@ -31,6 +33,13 @@ app.add_middleware(
 
 
 app.include_router(router)
+
+
+@app.on_event("startup")
+def startup():
+
+    warm_up_model()
+    logger.info("Model warmup completed")
 
 
 @app.get("/")
